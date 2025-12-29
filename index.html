@@ -3,62 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Inventario | Firebase</title>
+    <title>Sistema de Inventario Empresarial</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="main-container">
-        <aside class="sidebar">
-            <h2 class="sidebar-title">AGREGAR NUEVO</h2>
-            <div class="form-panel">
-                <label>Nombre:</label>
-                <input type="text" id="nombre" placeholder="Nombre del producto">
-                
-                <label>Código:</label>
-                <input type="text" id="codigo" placeholder="Código único">
-                
-                <label>Categoría:</label>
-                <select id="categoria">
-                    <option value="Electrónica">Electrónica</option>
-                    <option value="Ropa">Ropa</option>
-                    <option value="Hogar">Hogar</option>
-                    <option value="Otros">Otros</option>
-                </select>
+    <div class="status-bar">
+        <span id="auth-status">⚠️ No autenticado</span>
+    </div>
 
-                <label>Cantidad:</label>
-                <input type="number" id="cantidad" placeholder="Cantidad en stock">
+    <nav class="main-nav">
+        <button onclick="showSection('login-section')" class="nav-btn">🔐 Iniciar Sesión</button>
+        <button onclick="showSection('gestion-section')" class="nav-btn">📦 Gestión de Productos</button>
+        <button onclick="showSection('salidas-section')" class="nav-btn">📤 Registro de Salidas</button>
+        <button onclick="showSection('devoluciones-section')" class="nav-btn">🔄 Devoluciones</button>
+    </nav>
 
-                <div class="button-group">
-                    <button id="btnGuardar" class="btn-save">💾 Guardar</button>
+    <div class="container">
+        <section id="login-section" class="tab-content active">
+            <div class="login-box">
+                <h2>INICIAR</h2>
+                <div class="form-group">
+                    <label>Usuario:</label>
+                    <input type="text" id="user-input" placeholder="A">
+                    <label>Contraseña:</label>
+                    <input type="password" id="pass-input" placeholder="Ingrese su contraseña">
+                    <button id="btnLogin" class="btn-primary">🔑 Iniciar Sesión</button>
                 </div>
             </div>
-        </aside>
+        </section>
 
-        <main class="content">
-            <div class="top-bar">
-                <div class="tabs">
-                    <button class="tab active">📋 Gestión de Productos</button>
-                    <button class="tab">📤 Salidas de Productos</button>
-                </div>
-                <div class="search-container">
-                    🔍 <input type="text" id="buscador" placeholder="Buscar por nombre o código...">
-                </div>
+        <section id="gestion-section" class="tab-content">
+            <div class="panel-layout">
+                <aside class="sidebar">
+                    <h3>AGREGAR/EDITAR</h3>
+                    <input type="text" id="g-nombre" placeholder="Nombre:">
+                    <input type="text" id="g-codigo" placeholder="Código:">
+                    <select id="g-categoria">
+                        <option value="Electrónica">Electrónica</option>
+                        <option value="Hogar">Hogar</option>
+                    </select>
+                    <input type="number" id="g-cantidad" placeholder="Cantidad:">
+                    <select id="g-estado">
+                        <option value="Nuevo">Nuevo</option>
+                        <option value="Semi nuevo">Semi nuevo</option>
+                    </select>
+                    <div class="btn-group">
+                        <button id="btnGuardar" class="btn-save">💾 Guardar Producto</button>
+                        <button id="btnEliminar" class="btn-delete">🗑️ Eliminar Producto</button>
+                    </div>
+                </aside>
+                <main class="table-area">
+                    <div class="search-box">
+                        🔍 <input type="text" id="buscador" placeholder="Buscar por código o nombre...">
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Nombre</th>
+                                <th>Categoría</th>
+                                <th>Cantidad</th>
+                                <th>Estado</th>
+                                <th>Fecha Creación</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-productos"></tbody>
+                    </table>
+                </main>
             </div>
+        </section>
 
-            <table class="inventory-table">
-                <thead>
-                    <tr>
-                        <th>Código</th>
-                        <th>Nombre</th>
-                        <th>Categoría</th>
-                        <th>Cantidad</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="listaProductos">
-                    </tbody>
-            </table>
-        </main>
+        <section id="salidas-section" class="tab-content">
+            <div class="panel-layout">
+                <aside class="sidebar">
+                    <h3>REGISTRAR SALIDA DE</h3>
+                    <input type="text" id="s-codigo" placeholder="Código Producto:">
+                    <input type="number" id="s-cantidad" value="1">
+                    <input type="text" id="s-responsable" placeholder="Responsable:">
+                    <button id="btnRegistrarSalida" class="btn-warning">🚀 Registrar Salida</button>
+                </aside>
+                <main class="table-area">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID Salida</th>
+                                <th>Código</th>
+                                <th>Nombre</th>
+                                <th>Responsable</th>
+                                <th>Cantidad</th>
+                                <th>Fecha/Hora</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-salidas"></tbody>
+                    </table>
+                </main>
+            </div>
+        </section>
     </div>
 
     <script type="module" src="app.js"></script>
