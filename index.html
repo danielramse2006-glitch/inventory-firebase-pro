@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Sazón Papatenco | El Sabor de Nuestra Tierra</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --rojo: #8e2113; --dorado: #f1c40f; --negro: #0a0a0a; --gris: rgba(26, 26, 26, 0.95); }
+        body { font-family: 'Poppins', sans-serif; margin: 0; background-color: var(--negro); color: #fff; overflow-x: hidden; scroll-behavior: smooth; }
+        
+        .parallax-bg-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
+        .bg-part { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; transition: opacity 1.2s ease-in-out; }
+        .overlay-dark { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); z-index: 0; pointer-events: none; }
+        
+        .foto1 { background-image: url('imagenes/terraza.jpg'); opacity: 1; z-index: -2; }
+        .foto2 { background-image: url('imagenes/terraza1.jpg'); opacity: 0; z-index: -1; }
+
+        header { height: 45vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; position: relative; z-index: 1; }
+        .logo-img { max-width: 180px; border-radius: 8px; border: 3px solid var(--rojo); box-shadow: 0 0 20px var(--rojo); background: white; }
+
+        .bienvenida { background: var(--rojo); padding: 30px; margin: -30px 20px 40px; border-radius: 15px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.8); position: relative; z-index: 1; }
+        h2 { color: var(--dorado); text-align: center; text-transform: uppercase; margin: 60px 0 30px; text-shadow: 2px 2px 5px #000; border-bottom: 2px solid var(--rojo); display: table; margin-left: auto; margin-right: auto; padding-bottom: 5px; position: relative; z-index: 1; }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; padding: 0 20px; max-width: 1400px; margin: auto; position: relative; z-index: 1; }
+        .card { background: var(--gris); border-radius: 15px; overflow: hidden; border: 1px solid #333; transition: 0.4s ease; backdrop-filter: blur(5px); display: flex; flex-direction: column; }
+        .card:hover { transform: translateY(-12px); border-color: var(--dorado); box-shadow: 0 15px 30px rgba(142, 33, 19, 0.5); }
+        .card img { width: 100%; height: 200px; object-fit: cover; filter: brightness(0.8); }
+        .card-info { padding: 20px; text-align: center; flex-grow: 1; }
+        .card-info h3 { color: var(--rojo); font-size: 1.2em; margin: 0; text-transform: uppercase; }
+        .description { font-size: 0.85em; color: #ccc; margin: 10px 0; font-style: italic; line-height: 1.4; }
+        .price-tag { background: rgba(241, 196, 15, 0.1); color: var(--dorado); padding: 6px 12px; border-radius: 5px; font-weight: bold; display: inline-block; margin: 10px 0; border: 1px solid var(--dorado); font-size: 0.85em; }
+
+        .option-box { background: rgba(142, 33, 19, 0.15); border: 1px dashed var(--dorado); border-radius: 10px; padding: 12px; margin-top: 10px; text-align: left; }
+        .option-title { color: var(--dorado); font-size: 0.75em; font-weight: bold; text-transform: uppercase; display: block; margin-bottom: 5px; }
+        .tag-container { display: flex; flex-wrap: wrap; gap: 5px; }
+        .tag { background: #111; font-size: 0.75em; padding: 2px 8px; border-radius: 4px; border: 1px solid #444; color: #eee; }
+        .extra-info { color: var(--dorado); font-size: 0.75em; font-weight: bold; display: block; margin-top: 8px; border-top: 1px solid rgba(241, 196, 15, 0.3); padding-top: 5px; text-align: center; }
+
+        .map-container { max-width: 1000px; margin: 40px auto; padding: 0 20px; position: relative; z-index: 1; }
+        .map-container iframe { width: 100%; height: 400px; border-radius: 15px; border: 2px solid var(--rojo); box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+
+        .ws-float { position: fixed; bottom: 30px; right: 30px; background: #25d366; color: white; padding: 15px 25px; border-radius: 50px; text-decoration: none; font-weight: bold; z-index: 1000; box-shadow: 0 5px 20px rgba(0,0,0,0.5); border: 1px solid #fff; transition: 0.3s; }
+        
+        .domicilio-footer { text-align: center; padding: 60px 20px; background: rgba(0,0,0,0.9); margin-top: 50px; border-top: 4px solid var(--rojo); position: relative; z-index: 1; }
+        .info-envio { max-width: 750px; margin: 20px auto; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 10px; border-left: 5px solid var(--dorado); }
+        .social-links { margin-top: 30px; display: flex; justify-content: center; gap: 60px; flex-wrap: wrap; }
+        .social-links a { text-decoration: none; color: #fff; transition: 0.3s; text-align: center; }
+        .social-links i { font-size: 3.5em; display: block; margin-bottom: 5px; }
+        .link-wa:hover { color: #25d366; }
+        .link-fb:hover { color: #1877f2; }
+
+        .reveal { opacity: 0; transform: translateY(40px); transition: 1s all ease; }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+    </style>
+</head>
+<body>
+
+    <div class="parallax-bg-container">
+        <div id="bg1" class="bg-part foto1"></div>
+        <div id="bg2" class="bg-part foto2"></div>
+        <div class="overlay-dark"></div>
+    </div>
+
+    <header>
+        <img src="imagenes/logo.jpg" class="logo-img">
+        <h1 style="font-size: 2.8em; text-shadow: 2px 2px 10px #000; margin-top: 20px;">EL SAZÓN PAPANTECO</h1>
+    </header>
+
+    <div class="bienvenida reveal">
+        <p style="margin:0; font-style: italic; font-size: 1.2em;">"2 años de garantía trayendo a tu mesa el rico y delicioso sabor papanteco pa' que no extrañes nuestras tierras pachiii..."</p>
+    </div>
+
+    <h2>🔥 Especialidades</h2>
+    <div class="grid reveal">
+        <div class="card"><img src="imagenes/combo.jpg"><div class="card-info"><h3>Combo Surtido</h3><p class="description">12 PIEZAS: 2 sopes, 2 tostadas, 2 blanditos, 2 molotes, 2 flautas y 2 empanadas. Incluye papas fritas.</p><span class="price-tag">$300.00</span></div></div>
+        <div class="card"><img src="imagenes/estrujada.jpg"><div class="card-info"><h3>Estrujada</h3><p class="description">Bañada en frijoles, queso fresco y aguacate.</p><span class="price-tag">$160.00</span><div class="option-box">
+            <span class="option-title">🥩 Carnes:</span>
+            <div class="tag-container"><span class="tag">Cecina</span><span class="tag">Chuleta</span><span class="tag">Huevos al Gusto</span></div>
+            <span class="option-title" style="margin-top:8px;">🌶️ Salsas:</span>
+            <div class="tag-container"><span class="tag">Entomatadas</span><span class="tag">Enfrijoladas</span><span class="tag">Pipian</span><span class="tag">Morita</span><span class="tag">Mole</span><span class="tag">Chile Seco</span><span class="tag">Verdes</span></div>
+            <span class="extra-info">+ $10 MIXTA DE SALSAS</span>
+        </div></div></div>
+        <div class="card"><img src="imagenes/chilaquiles.jpg"><div class="card-info"><h3>Chilaquiles</h3><p class="description">Rojos, verdes o campechanos. Acompañados de frijoles, queso y aguacate.</p><span class="price-tag">$160.00</span><div class="option-box">
+            <span class="option-title">🥩 Carnes:</span>
+            <div class="tag-container"><span class="tag">Cecina</span><span class="tag">Chuleta</span><span class="tag">Huevos al Gusto</span><span class="tag">Pechuga</span></div>
+            <span class="option-title" style="margin-top:8px;">🌶️ Salsas:</span>
+            <div class="tag-container"><span class="tag">Entomatadas</span><span class="tag">Enfrijoladas</span><span class="tag">Pipian</span><span class="tag">Morita</span><span class="tag">Mole</span><span class="tag">Chile Seco</span><span class="tag">Verdes</span></div>
+            <span class="extra-info">+ $10 MIXTA DE SALSAS</span>
+        </div></div></div>
+    </div>
+
+    <h2>🌮 Antojitos Papantecos</h2>
+    <div class="grid reveal">
+        <div class="card"><img src="imagenes/enchiladas.jpg"><div class="card-info"><h3>Enchiladas</h3><p class="description">Frijoles negros guisados, queso fresco y aguacate.</p><span class="price-tag">Ord: $160 | Mixtas: $170 | 1/2: $130</span><div class="option-box">
+            <span class="option-title">🔢 Piezas:</span>
+            <div class="tag-container"><span class="tag">Ord 6 piezas</span><span class="tag">1/2 3 piezas</span></div>
+            <span class="option-title" style="margin-top:8px;">🥩 Carnes:</span>
+            <div class="tag-container"><span class="tag">Cecina</span><span class="tag">Chuleta</span><span class="tag">Pechuga</span><span class="tag">Carne Enchilada</span><span class="tag">Huevos al Gusto</span></div>
+            <span class="option-title" style="margin-top:8px;">🌶️ Salsas:</span>
+            <div class="tag-container"><span class="tag">Entomatadas</span><span class="tag">Enfrijoladas</span><span class="tag">Pipian</span><span class="tag">Morita</span><span class="tag">Mole</span><span class="tag">Chile Seco</span><span class="tag">Verdes</span></div>
+            <span class="extra-info">+ $10 MIXTA DE SALSAS</span>
+        </div></div></div>
+        
+        <div class="card"><img src="imagenes/sopes.jpg"><div class="card-info"><h3>Sopes</h3><p class="description">Con frijoles, lechuga, tomate, queso , aguacate acompañados con papas fritas.</p><span class="price-tag">Ord: $155 | 1/2: $110</span><div class="option-box">
+            <span class="option-title">🔢 Piezas:</span>
+            <div class="tag-container"><span class="tag">Ord 5 piezas</span><span class="tag">1/2 3 piezas</span></div>
+        </div></div></div>
+        
+        <div class="card"><img src="imagenes/tostadas.jpg"><div class="card-info"><h3>Tostadas</h3><p class="description">Con frijoles, lechuga, tomate, queso ,aguacate acompañadas con papas fritas.</p><span class="price-tag">Ord: $160 | 1/2: $110</span><div class="option-box">
+            <span class="option-title">🔢 Piezas:</span>
+            <div class="tag-container"><span class="tag">Ord 5 piezas</span><span class="tag">1/2 3 piezas</span></div>
+        </div></div></div>
+        
+        <div class="card"><img src="imagenes/flautas.jpg"><div class="card-info"><h3>Flautas</h3><p class="description">Pollo o deshebrada. Acompañadas de ensalada de lechuga y papas fritas.</p><span class="price-tag">Ord: $155 | 1/2: $110</span><div class="option-box">
+            <span class="option-title">🔢 Piezas:</span>
+            <div class="tag-container"><span class="tag">Ord 6 piezas</span><span class="tag">1/2 4 piezas</span></div>
+        </div></div></div>
+        
+        <div class="card"><img src="imagenes/blanditos.jpg"><div class="card-info"><h3>Blanditos</h3><p class="description">Rellenos a escoger papa, queso, desebrada ,frijoles y ensalada de lechuga acompañados con papas fritas.</p><span class="price-tag">Ord: $155 | 1/2: $110</span><div class="option-box">
+            <span class="option-title">🔢 Piezas:</span>
+            <div class="tag-container"><span class="tag">Ord 6 piezas</span><span class="tag">1/2 3 piezas</span></div>
+        </div></div></div>
+
+        <div class="card"><img src="imagenes/molotes.jpg"><div class="card-info"><h3>Molotes</h3><p class="description">Rellenos de queso, pollo o puerco. Con frijoles y ensalada.</p><span class="price-tag">Ord: Nat $155 / Ahog $165 <br> 1/2: Nat $110 / Ahog $120</span><div class="option-box">
+            <span class="option-title">🔢 Piezas:</span>
+            <div class="tag-container"><span class="tag">Ord 6 piezas</span><span class="tag">1/2 3 piezas</span></div>
+            <span class="option-title" style="margin-top:8px;">🥩 Mixta en Guiso:</span>
+            <div class="tag-container"><span class="tag">Ord Mixta $165</span><span class="tag">Ord Ahog Mixta $175</span><span class="tag">1/2 Ahog Mixta $130</span><span class="tag">1/2 Mixta $140</span></div>
+            <span class="option-title" style="margin-top:8px;">🌶️ Salsas:</span>
+            <div class="tag-container"><span class="tag">Entomatadas</span><span class="tag">Enfrijoladas</span><span class="tag">Pipian</span><span class="tag">Morita</span><span class="tag">Mole</span><span class="tag">Chile Seco</span><span class="tag">Verdes</span></div>
+            <span class="extra-info">+ $10 MIXTA DE SALSAS</span>
+        </div></div></div>
+
+        <div class="card"><img src="imagenes/empanadas.jpg"><div class="card-info"><h3>Empanadas</h3><p class="description"> empanadas 2 guisos a elegir ya se de pollo, puerco, guisado de res, queso fresco o asadero y Choriqueso acompañadas con ensaladita y frijoles.</p><span class="price-tag">Ord: $160 | 1/2: $110</span><div class="option-box">
+            <span class="option-title">🔢 Piezas:</span>
+            <div class="tag-container"><span class="tag">Ord 6 piezas</span><span class="tag">1/2 3 piezas</span></div>
+        </div></div></div>
+        
+        <div class="card"><img src="imagenes/picadas.jpg"><div class="card-info"><h3>Picadas</h3><p class="description">Con chorizo al comal y manteca, bañada en salsa de tomate y frojoles.</p><span class="price-tag">Ord: $155 | 1/2: $100</span><div class="option-box">
+            <span class="option-title">🔢 Piezas:</span>
+            <div class="tag-container"><span class="tag">Ord 6 piezas</span><span class="tag">1/2 3 piezas</span></div>
+        </div></div></div>
+
+        <div class="card"><img src="imagenes/enmoladas.jpg"><div class="card-info"><h3>Enmoladas</h3><p class="description">Tortilla frita en mole y frijoles con pollo natural. Decorado con repollo, tomate, queso y aguacate.</p><span class="price-tag">Ord: $160 | 1/2: $110</span><div class="option-box">
+            <span class="option-title">🔢 Piezas:</span>
+            <div class="tag-container"><span class="tag">Ord 6 piezas</span><span class="tag">1/2 3 piezas</span></div>
+        </div></div></div>
+    </div>
+
+    <script>
+        window.addEventListener('scroll', () => {
+            document.querySelectorAll('.reveal').forEach(el => {
+                if(el.getBoundingClientRect().top < window.innerHeight - 50) el.classList.add('active');
+            });
+            const scrollPos = window.scrollY;
+            const bg1 = document.getElementById('bg1');
+            const bg2 = document.getElementById('bg2');
+            if (scrollPos > 1200) { bg1.style.opacity = "0"; bg2.style.opacity = "1"; }
+            else { bg1.style.opacity = "1"; bg2.style.opacity = "0"; }
+        });
+        window.onload = () => { if(document.querySelectorAll('.reveal')[0]) document.querySelectorAll('.reveal')[0].classList.add('active'); };
+    </script>
+</body>
+</html>
