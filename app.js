@@ -1,70 +1,70 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// Tus credenciales reales
+// Tu configuración de Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyCtIagFFJBFRjvg5usXTm575YqOeeDE1G0",
   authDomain: "mi-inventario-51f82.firebaseapp.com",
   projectId: "mi-inventario-51f82",
   storageBucket: "mi-inventario-51f82.firebasestorage.app",
   messagingSenderId: "79417755416",
-  appId: "1:79417755416:web:e1bbab46cda2bdbb5da56d",
-  measurementId: "G-P1PRV5HE93"
+  appId: "1:79417755416:web:e1bbab46cda2bdbb5da56d"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const productosRef = collection(db, "productos");
 
-// --- 1. AGREGAR PRODUCTO ---
+let todosLosProductos = []; // Guardaremos una copia para el buscador
+
+// GUARDAR
 document.getElementById('btnGuardar').onclick = async () => {
     const nombre = document.getElementById('nombre').value;
+    const codigo = document.getElementById('codigo').value;
+    const categoria = document.getElementById('categoria').value;
     const cantidad = document.getElementById('cantidad').value;
 
-    if(nombre && cantidad) {
+    if(nombre && codigo && cantidad) {
         await addDoc(productosRef, {
-            nombre: nombre,
-            cantidad: Number(cantidad)
+            nombre, codigo, categoria, cantidad: Number(cantidad), fecha: new Date().toLocaleString()
         });
-        document.getElementById('nombre').value = "";
-        document.getElementById('cantidad').value = "";
+        alert("Guardado correctamente");
     }
 };
 
-// --- 2. LEER Y MOSTRAR (TIEMPO REAL) ---
+// LEER Y RENDERIZAR
 onSnapshot(productosRef, (snapshot) => {
-    const listaDiv = document.getElementById('listaProductos');
-    listaDiv.innerHTML = "";
-    snapshot.forEach((docSnap) => {
-        const p = docSnap.data();
-        const id = docSnap.id;
-        
-        listaDiv.innerHTML += `
-            <div class="producto-card">
-                <div>
-                    <strong>${p.nombre}</strong> <br>
-                    <span>Stock: ${p.cantidad}</span>
-                </div>
-                <div>
-                    <button onclick="vender('${id}', ${p.cantidad})" style="background:#28a745; width:auto;">Vender 1</button>
-                    <button onclick="eliminar('${id}')" style="background:#dc3545; width:auto;">Eliminar</button>
-                </div>
-            </div>`;
-    });
+    todosLosProductos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    renderizarTabla(todosLosProductos);
 });
 
-// --- 3. FUNCIONES GLOBALES PARA LOS BOTONES ---
-window.vender = async (id, stockActual) => {
-    if (stockActual > 0) {
-        const docRef = doc(db, "productos", id);
-        await updateDoc(docRef, { cantidad: stockActual - 1 });
-    } else {
-        alert("Sin stock disponible");
-    }
+function renderizarTabla(datos) {
+    const listaDiv = document.getElementById('listaProductos');
+    listaDiv.innerHTML = "";
+    datos.forEach(p => {
+        listaDiv.innerHTML += `
+            <tr>
+                <td>${p.codigo}</td>
+                <td>${p.nombre}</td>
+                <td>${p.categoria}</td>
+                <td>${p.cantidad}</td>
+                <td>
+                    <button class="btn-delete-row" onclick="eliminar('${p.id}')">Eliminar</button>
+                </td>
+            </tr>`;
+    });
+}
+
+// BUSCADOR EN TIEMPO REAL
+document.getElementById('buscador').oninput = (e) => {
+    const termino = e.target.value.toLowerCase();
+    const filtrados = todosLosProductos.filter(p => 
+        p.nombre.toLowerCase().includes(termino) || p.codigo.toLowerCase().includes(termino)
+    );
+    renderizarTabla(filtrados);
 };
 
+// ELIMINAR
 window.eliminar = async (id) => {
-    if(confirm("¿Seguro que quieres borrar este producto?")) {
-        await deleteDoc(doc(db, "productos", id));
-    }
+    if(confirm("¿Eliminar producto?")) await deleteDoc(doc(db, "productos", id));
 };
