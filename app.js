@@ -13,7 +13,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 let productosLocal = [];
-let idSeleccionado = null; // ID global para borrar
 let currentUser = "";
 
 window.showSection = (id) => {
@@ -21,19 +20,18 @@ window.showSection = (id) => {
     document.getElementById(id).classList.add('active');
 };
 
-// --- ALTA PRECISIÓN Y DATOS DISPOSITIVO ---
+// --- AUDITORÍA DE ALTA PRECISIÓN Y DISPOSITIVO ---
 async function getAuditData() {
-    let data = { ip: "0.0.0.0", loc: "Sin permiso", device: navigator.userAgent.split(')')[0].split('(')[1] };
+    let data = { ip: "0.0.0.0", loc: "Sin permiso", device: navigator.userAgent.split('(')[1].split(')')[0] };
     try {
         const res = await fetch('https://api.ipify.org?format=json');
         const json = await res.json();
         data.ip = json.ip;
-        
         return new Promise(resolve => {
             navigator.geolocation.getCurrentPosition(
                 p => { data.loc = `${p.coords.latitude},${p.coords.longitude}`; resolve(data); },
                 () => resolve(data),
-                { enableHighAccuracy: true, timeout: 5000 } // FORZAR ALTA PRECISIÓN
+                { enableHighAccuracy: true, timeout: 5000 }
             );
         });
     } catch { return data; }
@@ -46,7 +44,7 @@ async function registrarLog(tipo, detalle) {
     });
 }
 
-// --- LOGIN ---
+// --- LOGIN CON ROLES ---
 document.getElementById('btnLogin').onclick = async () => {
     const u = document.getElementById('user-input').value;
     const p = document.getElementById('pass-input').value;
@@ -57,30 +55,43 @@ document.getElementById('btnLogin').onclick = async () => {
     } else if (u === "usuariout" && p === "12131415") {
         currentUser = u;
         document.getElementById('nav-historial').style.display = "none";
-    } else { return alert("Acceso Incorrecto"); }
+    } else { return alert("Credenciales incorrectas"); }
 
     await registrarLog("LOGIN", "Inicio Sesión");
     document.getElementById('auth-status').innerText = `✅ ${currentUser.toUpperCase()}`;
     showSection('gestion-section');
 };
 
-// --- SELECCIONAR PARA BORRAR (Corregido) ---
-window.marcarFila = (id) => {
-    idSeleccionado = id;
-    document.querySelectorAll('tr').forEach(r => r.classList.remove('selected-row'));
-    event.currentTarget.classList.add('selected-row');
-};
+// --- BORRADO RÁPIDO POR CÓDIGO (Resta o Elimina) ---
+document.getElementById('btnEliminarRapido').onclick = async () => {
+    const cod = document.getElementById('g-codigo').value;
+    const cantABorrar = Number(document.getElementById('g-cantidad').value);
 
-document.getElementById('btnEliminar').onclick = async () => {
-    if(!idSeleccionado) return alert("Haga clic en una fila de la tabla para seleccionarla");
-    if(confirm("¿Eliminar este producto permanentemente?")) {
-        await deleteDoc(doc(db, "productos", idSeleccionado));
-        await registrarLog("BORRAR", `Eliminó ID: ${idSeleccionado}`);
-        idSeleccionado = null; // Limpiar selección
+    if(!cod || cantABorrar <= 0) return alert("Indique código y cantidad a quitar");
+
+    const q = query(collection(db, "productos"), where("codigo", "==", cod));
+    const snap = await getDocs(q);
+
+    if(snap.empty) return alert("Código no encontrado");
+
+    const pDoc = snap.docs[0];
+    const pData = pDoc.data();
+    const nuevaCantidad = pData.cantidad - cantABorrar;
+
+    if(nuevaCantidad <= 0) {
+        if(confirm(`Stock agotado. ¿ELIMINAR ${pData.nombre} permanentemente?`)) {
+            await deleteDoc(doc(db, "productos", pDoc.id));
+            await registrarLog("ELIMINAR", `Borrado: ${pData.nombre}`);
+            alert("Producto eliminado.");
+        }
+    } else {
+        await updateDoc(doc(db, "productos", pDoc.id), { cantidad: nuevaCantidad });
+        await registrarLog("RESTAR", `Restó ${cantABorrar} a ${pData.nombre}`);
+        alert(`Quedan ${nuevaCantidad} unidades.`);
     }
 };
 
-// --- GESTIÓN GUARDAR ---
+// --- GUARDAR O SUMAR STOCK ---
 document.getElementById('btnGuardar').onclick = async () => {
     const cod = document.getElementById('g-codigo').value;
     const nom = document.getElementById('g-nombre').value;
@@ -93,10 +104,14 @@ document.getElementById('btnGuardar').onclick = async () => {
         await updateDoc(doc(db, "productos", snap.docs[0].id), { cantidad: snap.docs[0].data().cantidad + cant });
         await registrarLog("STOCK", `Sumó ${cant} a ${nom}`);
     } else {
-        await addDoc(collection(db, "productos"), { nombre: nom, codigo: cod, cantidad: cant, categoria: document.getElementById('g-categoria').value, estado: document.getElementById('g-estado').value });
+        await addDoc(collection(db, "productos"), {
+            nombre: nom, codigo: cod, cantidad: cant,
+            categoria: document.getElementById('g-categoria').value,
+            estado: document.getElementById('g-estado').value
+        });
         await registrarLog("CREAR", `Nuevo: ${nom}`);
     }
-    alert("Procesado");
+    alert("Datos actualizados");
 };
 
 // --- BUSCADOR ---
@@ -106,7 +121,7 @@ document.getElementById('btnBuscar').onclick = () => {
     renderTable(filt);
 };
 
-// --- SALIDAS / DEVOLUCIONES ---
+// --- SALIDAS Y DEVOLUCIONES ---
 document.getElementById('btnRegistrarSalida').onclick = async () => {
     const cod = document.getElementById('s-codigo').value;
     const cant = Number(document.getElementById('s-cantidad').value);
@@ -116,7 +131,7 @@ document.getElementById('btnRegistrarSalida').onclick = async () => {
         await updateDoc(doc(db, "productos", snap.docs[0].id), { cantidad: snap.docs[0].data().cantidad - cant });
         await addDoc(collection(db, "salidas"), { codigo: cod, responsable: document.getElementById('s-responsable').value, cantidad: cant, fecha: new Date().toLocaleString() });
         await registrarLog("SALIDA", `${cant} de ${cod}`);
-    } else { alert("Error de Stock"); }
+    } else { alert("Stock insuficiente"); }
 };
 
 document.getElementById('btnRegistrarDevolucion').onclick = async () => {
@@ -131,12 +146,10 @@ document.getElementById('btnRegistrarDevolucion').onclick = async () => {
     }
 };
 
-// --- RENDERIZADO ---
+// --- SINCRONIZACIÓN Y TABLAS ---
 function renderTable(data) {
     const tb = document.getElementById('tbody-productos'); tb.innerHTML = "";
-    data.forEach(p => {
-        tb.innerHTML += `<tr onclick="marcarFila('${p.id}')"><td>${p.codigo}</td><td>${p.nombre}</td><td><b>${p.cantidad}</b></td><td>${p.estado}</td></tr>`;
-    });
+    data.forEach(p => { tb.innerHTML += `<tr><td>${p.codigo}</td><td>${p.nombre}</td><td><b>${p.cantidad}</b></td><td>${p.estado}</td></tr>`; });
 }
 
 onSnapshot(collection(db, "productos"), s => {
@@ -158,7 +171,7 @@ onSnapshot(collection(db, "historial"), s => {
     const tb = document.getElementById('tbody-historial'); tb.innerHTML = "";
     s.docs.forEach(d => {
         const v = d.data();
-        const mapLink = v.loc !== "Sin permiso" ? `<a href="https://www.google.com/maps?q=${v.loc}" target="_blank">📍 Maps</a>` : "N/A";
+        const mapLink = v.loc !== "Sin permiso" ? `<a href="https://www.google.com/maps?q=${v.loc}" target="_blank">📍 Ver Mapa</a>` : "N/A";
         tb.innerHTML += `<tr><td>${v.tipo}</td><td>${v.usuario}</td><td>${v.device || 'PC'}</td><td>${v.ip}<br>${mapLink}</td><td>${v.fecha}</td></tr>`;
     });
 });
