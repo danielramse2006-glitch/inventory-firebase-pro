@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>SISTEMA DE INVENTARIO SEGURO</title>
+    <title>SISTEMA DE INVENTARIO EMPRESARIAL - V3.0</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -12,7 +12,7 @@
     </div>
 
     <nav class="main-nav">
-        <button onclick="showSection('login-section')" class="nav-btn">🔐 INICIO</button>
+        <button onclick="showSection('login-section')" class="nav-btn">🔐 LOGIN</button>
         <button onclick="showSection('gestion-section')" class="nav-btn">📦 GESTIÓN</button>
         <button onclick="showSection('salidas-section')" class="nav-btn">📤 SALIDAS</button>
         <button onclick="showSection('devoluciones-section')" class="nav-btn">🔄 DEVOLUCIONES</button>
@@ -22,10 +22,10 @@
     <div class="container">
         <section id="login-section" class="tab-content active">
             <div class="login-box">
-                <h2>INICIAR</h2>
+                <h2>INICIAR SESIÓN</h2>
                 <input type="text" id="user-input" placeholder="Usuario">
                 <input type="password" id="pass-input" placeholder="Contraseña">
-                <button id="btnLogin" class="btn-primary" style="background:#27ae60; border-radius:4px;">Entrar</button>
+                <button id="btnLogin" class="btn-primary" style="background:#27ae60; width:100%; border-radius:4px;">Entrar</button>
             </div>
         </section>
 
@@ -40,17 +40,35 @@
                     <select id="g-estado"><option>Nuevo</option><option>Semi nuevo</option></select>
                     <div style="display:flex; gap:5px;">
                         <button id="btnGuardar" class="btn-save" style="flex:1">💾 Guardar</button>
-                        <button id="btnEliminar" class="btn-danger" style="flex:1">🗑️ Eliminar</button>
+                        <button id="btnEliminar" class="btn-danger" style="flex:1">🗑️ Borrar</button>
                     </div>
                 </aside>
                 <main class="table-area">
                     <div class="header-table">
-                        <input type="text" id="buscador" placeholder="Buscar producto...">
+                        <input type="text" id="buscador" placeholder="Escriba aquí (ej: esp)...">
                         <button id="btnBuscar" class="btn-primary">🔍 BUSCAR</button>
                     </div>
                     <table class="data-table">
                         <thead><tr><th>COD</th><th>NOMBRE</th><th>STOCK</th><th>ESTADO</th></tr></thead>
                         <tbody id="tbody-productos"></tbody>
+                    </table>
+                </main>
+            </div>
+        </section>
+
+        <section id="salidas-section" class="tab-content">
+            <div class="panel-layout">
+                <aside class="sidebar">
+                    <h3>REGISTRAR SALIDA</h3>
+                    <input type="text" id="s-codigo" placeholder="Código">
+                    <input type="number" id="s-cantidad" value="1">
+                    <input type="text" id="s-responsable" placeholder="Responsable">
+                    <button id="btnRegistrarSalida" class="btn-warning">🚀 Salida</button>
+                </aside>
+                <main class="table-area">
+                    <table class="data-table">
+                        <thead><tr><th>COD</th><th>RESPONSABLE</th><th>CANT</th><th>FECHA</th></tr></thead>
+                        <tbody id="tbody-salidas"></tbody>
                     </table>
                 </main>
             </div>
