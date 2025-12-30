@@ -20,18 +20,23 @@ window.showSection = (id) => {
     document.getElementById(id).classList.add('active');
 };
 
-// --- AUDITORÍA DE ALTA PRECISIÓN Y DISPOSITIVO ---
+// --- AUDITORÍA: IP, ALTA PRECISIÓN Y NOMBRE DEL DISPOSITIVO ---
 async function getAuditData() {
-    let data = { ip: "0.0.0.0", loc: "Sin permiso", device: navigator.userAgent.split('(')[1].split(')')[0] };
+    let data = { 
+        ip: "0.0.0.0", 
+        loc: "Sin permiso", 
+        device: navigator.userAgent.includes("Windows") ? "Laptop Windows" : navigator.platform 
+    };
     try {
         const res = await fetch('https://api.ipify.org?format=json');
         const json = await res.json();
         data.ip = json.ip;
+        
         return new Promise(resolve => {
             navigator.geolocation.getCurrentPosition(
                 p => { data.loc = `${p.coords.latitude},${p.coords.longitude}`; resolve(data); },
                 () => resolve(data),
-                { enableHighAccuracy: true, timeout: 5000 }
+                { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
             );
         });
     } catch { return data; }
@@ -55,19 +60,19 @@ document.getElementById('btnLogin').onclick = async () => {
     } else if (u === "usuariout" && p === "12131415") {
         currentUser = u;
         document.getElementById('nav-historial').style.display = "none";
-    } else { return alert("Credenciales incorrectas"); }
+    } else { return alert("Error de acceso"); }
 
     await registrarLog("LOGIN", "Inicio Sesión");
     document.getElementById('auth-status').innerText = `✅ ${currentUser.toUpperCase()}`;
     showSection('gestion-section');
 };
 
-// --- BORRADO RÁPIDO POR CÓDIGO (Resta o Elimina) ---
+// --- LÓGICA DE BORRADO/RESTADO RÁPIDO ---
 document.getElementById('btnEliminarRapido').onclick = async () => {
     const cod = document.getElementById('g-codigo').value;
     const cantABorrar = Number(document.getElementById('g-cantidad').value);
 
-    if(!cod || cantABorrar <= 0) return alert("Indique código y cantidad a quitar");
+    if(!cod || cantABorrar <= 0) return alert("Escriba código y cantidad para restar");
 
     const q = query(collection(db, "productos"), where("codigo", "==", cod));
     const snap = await getDocs(q);
@@ -79,19 +84,17 @@ document.getElementById('btnEliminarRapido').onclick = async () => {
     const nuevaCantidad = pData.cantidad - cantABorrar;
 
     if(nuevaCantidad <= 0) {
-        if(confirm(`Stock agotado. ¿ELIMINAR ${pData.nombre} permanentemente?`)) {
+        if(confirm(`El stock llegará a 0. ¿Eliminar ${pData.nombre} de la base de datos?`)) {
             await deleteDoc(doc(db, "productos", pDoc.id));
-            await registrarLog("ELIMINAR", `Borrado: ${pData.nombre}`);
-            alert("Producto eliminado.");
+            await registrarLog("ELIMINAR", `Borrado total: ${pData.nombre}`);
         }
     } else {
         await updateDoc(doc(db, "productos", pDoc.id), { cantidad: nuevaCantidad });
         await registrarLog("RESTAR", `Restó ${cantABorrar} a ${pData.nombre}`);
-        alert(`Quedan ${nuevaCantidad} unidades.`);
     }
 };
 
-// --- GUARDAR O SUMAR STOCK ---
+// --- GUARDAR O SUMAR ---
 document.getElementById('btnGuardar').onclick = async () => {
     const cod = document.getElementById('g-codigo').value;
     const nom = document.getElementById('g-nombre').value;
@@ -111,7 +114,7 @@ document.getElementById('btnGuardar').onclick = async () => {
         });
         await registrarLog("CREAR", `Nuevo: ${nom}`);
     }
-    alert("Datos actualizados");
+    alert("Operación exitosa");
 };
 
 // --- BUSCADOR ---
@@ -171,7 +174,7 @@ onSnapshot(collection(db, "historial"), s => {
     const tb = document.getElementById('tbody-historial'); tb.innerHTML = "";
     s.docs.forEach(d => {
         const v = d.data();
-        const mapLink = v.loc !== "Sin permiso" ? `<a href="https://www.google.com/maps?q=${v.loc}" target="_blank">📍 Ver Mapa</a>` : "N/A";
-        tb.innerHTML += `<tr><td>${v.tipo}</td><td>${v.usuario}</td><td>${v.device || 'PC'}</td><td>${v.ip}<br>${mapLink}</td><td>${v.fecha}</td></tr>`;
+        const mapLink = v.loc !== "Sin permiso" ? `<a href="https://www.google.com/maps/search/?api=1&query=${v.loc}" target="_blank">📍 Mapa Exacto</a>` : "N/A";
+        tb.innerHTML += `<tr><td>${v.tipo}</td><td>${v.usuario}</td><td>${v.device}</td><td>${v.ip}<br>${mapLink}</td><td>${v.fecha}</td></tr>`;
     });
 });
