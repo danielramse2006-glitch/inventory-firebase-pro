@@ -13,7 +13,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 let productosLocal = [];
-let idSeleccionado = null;
+let idSeleccionado = null; // ID global para borrar
 let currentUser = "";
 
 window.showSection = (id) => {
@@ -21,30 +21,32 @@ window.showSection = (id) => {
     document.getElementById(id).classList.add('active');
 };
 
-// --- SEGURIDAD: IP Y UBICACIÓN ---
-async function getSecurityData() {
-    let data = { ip: "0.0.0.0", loc: "Sin permiso" };
+// --- ALTA PRECISIÓN Y DATOS DISPOSITIVO ---
+async function getAuditData() {
+    let data = { ip: "0.0.0.0", loc: "Sin permiso", device: navigator.userAgent.split(')')[0].split('(')[1] };
     try {
         const res = await fetch('https://api.ipify.org?format=json');
         const json = await res.json();
         data.ip = json.ip;
+        
         return new Promise(resolve => {
             navigator.geolocation.getCurrentPosition(
                 p => { data.loc = `${p.coords.latitude},${p.coords.longitude}`; resolve(data); },
-                () => resolve(data)
+                () => resolve(data),
+                { enableHighAccuracy: true, timeout: 5000 } // FORZAR ALTA PRECISIÓN
             );
         });
     } catch { return data; }
 }
 
 async function registrarLog(tipo, detalle) {
-    const info = await getSecurityData();
+    const info = await getAuditData();
     await addDoc(collection(db, "historial"), {
-        tipo, usuario: currentUser, detalle, ip: info.ip, loc: info.loc, fecha: new Date().toLocaleString()
+        tipo, usuario: currentUser, detalle, ip: info.ip, loc: info.loc, device: info.device, fecha: new Date().toLocaleString()
     });
 }
 
-// --- LOGIN CON ROLES ---
+// --- LOGIN ---
 document.getElementById('btnLogin').onclick = async () => {
     const u = document.getElementById('user-input').value;
     const p = document.getElementById('pass-input').value;
@@ -57,17 +59,32 @@ document.getElementById('btnLogin').onclick = async () => {
         document.getElementById('nav-historial').style.display = "none";
     } else { return alert("Acceso Incorrecto"); }
 
-    await registrarLog("LOGIN", "Entrada al sistema");
-    document.getElementById('auth-status').innerText = `✅ USUARIO: ${currentUser.toUpperCase()}`;
+    await registrarLog("LOGIN", "Inicio Sesión");
+    document.getElementById('auth-status').innerText = `✅ ${currentUser.toUpperCase()}`;
     showSection('gestion-section');
 };
 
-// --- GESTIÓN (GUARDAR/SUMAR) ---
+// --- SELECCIONAR PARA BORRAR (Corregido) ---
+window.marcarFila = (id) => {
+    idSeleccionado = id;
+    document.querySelectorAll('tr').forEach(r => r.classList.remove('selected-row'));
+    event.currentTarget.classList.add('selected-row');
+};
+
+document.getElementById('btnEliminar').onclick = async () => {
+    if(!idSeleccionado) return alert("Haga clic en una fila de la tabla para seleccionarla");
+    if(confirm("¿Eliminar este producto permanentemente?")) {
+        await deleteDoc(doc(db, "productos", idSeleccionado));
+        await registrarLog("BORRAR", `Eliminó ID: ${idSeleccionado}`);
+        idSeleccionado = null; // Limpiar selección
+    }
+};
+
+// --- GESTIÓN GUARDAR ---
 document.getElementById('btnGuardar').onclick = async () => {
     const cod = document.getElementById('g-codigo').value;
-    const cant = Number(document.getElementById('g-cantidad').value);
     const nom = document.getElementById('g-nombre').value;
-    if(!cod || !nom) return alert("Faltan datos");
+    const cant = Number(document.getElementById('g-cantidad').value);
 
     const q = query(collection(db, "productos"), where("codigo", "==", cod));
     const snap = await getDocs(q);
@@ -77,18 +94,9 @@ document.getElementById('btnGuardar').onclick = async () => {
         await registrarLog("STOCK", `Sumó ${cant} a ${nom}`);
     } else {
         await addDoc(collection(db, "productos"), { nombre: nom, codigo: cod, cantidad: cant, categoria: document.getElementById('g-categoria').value, estado: document.getElementById('g-estado').value });
-        await registrarLog("CREAR", `Producto nuevo: ${nom}`);
+        await registrarLog("CREAR", `Nuevo: ${nom}`);
     }
-};
-
-// --- ELIMINAR ---
-document.getElementById('btnEliminar').onclick = async () => {
-    if(!idSeleccionado) return alert("Selecciona una fila en la tabla");
-    if(confirm("¿Eliminar permanentemente?")) {
-        await deleteDoc(doc(db, "productos", idSeleccionado));
-        await registrarLog("BORRAR", `ID: ${idSeleccionado}`);
-        idSeleccionado = null;
-    }
+    alert("Procesado");
 };
 
 // --- BUSCADOR ---
@@ -98,43 +106,36 @@ document.getElementById('btnBuscar').onclick = () => {
     renderTable(filt);
 };
 
-// --- SALIDAS ---
+// --- SALIDAS / DEVOLUCIONES ---
 document.getElementById('btnRegistrarSalida').onclick = async () => {
     const cod = document.getElementById('s-codigo').value;
     const cant = Number(document.getElementById('s-cantidad').value);
     const q = query(collection(db, "productos"), where("codigo", "==", cod));
     const snap = await getDocs(q);
-
     if(!snap.empty && snap.docs[0].data().cantidad >= cant) {
         await updateDoc(doc(db, "productos", snap.docs[0].id), { cantidad: snap.docs[0].data().cantidad - cant });
         await addDoc(collection(db, "salidas"), { codigo: cod, responsable: document.getElementById('s-responsable').value, cantidad: cant, fecha: new Date().toLocaleString() });
-        await registrarLog("SALIDA", `${cant} unidades de ${cod}`);
-        alert("Salida realizada");
-    } else { alert("Stock insuficiente"); }
+        await registrarLog("SALIDA", `${cant} de ${cod}`);
+    } else { alert("Error de Stock"); }
 };
 
-// --- DEVOLUCIONES ---
 document.getElementById('btnRegistrarDevolucion').onclick = async () => {
     const cod = document.getElementById('d-codigo').value;
     const cant = Number(document.getElementById('d-cantidad').value);
     const q = query(collection(db, "productos"), where("codigo", "==", cod));
     const snap = await getDocs(q);
-
     if(!snap.empty) {
-        const p = snap.docs[0];
-        await updateDoc(doc(db, "productos", p.id), { cantidad: p.data().cantidad + cant });
-        await addDoc(collection(db, "devoluciones"), { codigo: cod, nombre: p.data().nombre, cantidad: cant, motivo: document.getElementById('d-motivo').value, usuario: currentUser, fecha: new Date().toLocaleString() });
-        await registrarLog("DEVOLUCION", `${cant} unidades de ${cod}`);
-        alert("Devolución procesada");
+        await updateDoc(doc(db, "productos", snap.docs[0].id), { cantidad: snap.docs[0].data().cantidad + cant });
+        await addDoc(collection(db, "devoluciones"), { codigo: cod, nombre: snap.docs[0].data().nombre, cantidad: cant, motivo: document.getElementById('d-motivo').value, usuario: currentUser, fecha: new Date().toLocaleString() });
+        await registrarLog("DEVOLUCION", `${cant} de ${cod}`);
     }
 };
 
-// --- SINCRONIZACIÓN TIEMPO REAL ---
+// --- RENDERIZADO ---
 function renderTable(data) {
     const tb = document.getElementById('tbody-productos'); tb.innerHTML = "";
     data.forEach(p => {
-        tb.innerHTML += `<tr onclick="idSeleccionado='${p.id}'; document.querySelectorAll('tr').forEach(r=>r.classList.remove('selected-row')); event.currentTarget.classList.add('selected-row');">
-            <td>${p.codigo}</td><td>${p.nombre}</td><td><b>${p.cantidad}</b></td><td>${p.estado}</td></tr>`;
+        tb.innerHTML += `<tr onclick="marcarFila('${p.id}')"><td>${p.codigo}</td><td>${p.nombre}</td><td><b>${p.cantidad}</b></td><td>${p.estado}</td></tr>`;
     });
 }
 
@@ -157,7 +158,7 @@ onSnapshot(collection(db, "historial"), s => {
     const tb = document.getElementById('tbody-historial'); tb.innerHTML = "";
     s.docs.forEach(d => {
         const v = d.data();
-        const mapLink = v.loc !== "Sin permiso" ? `<a href="https://www.google.com/maps?q=${v.loc}" target="_blank">📍 Ver Mapa</a>` : "N/A";
-        tb.innerHTML += `<tr><td>${v.tipo}</td><td>${v.usuario}</td><td>${v.detalle}</td><td>${v.ip}<br>${mapLink}</td><td>${v.fecha}</td></tr>`;
+        const mapLink = v.loc !== "Sin permiso" ? `<a href="https://www.google.com/maps?q=${v.loc}" target="_blank">📍 Maps</a>` : "N/A";
+        tb.innerHTML += `<tr><td>${v.tipo}</td><td>${v.usuario}</td><td>${v.device || 'PC'}</td><td>${v.ip}<br>${mapLink}</td><td>${v.fecha}</td></tr>`;
     });
 });

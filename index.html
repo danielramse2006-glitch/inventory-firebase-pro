@@ -2,13 +2,13 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>SISTEMA DE INVENTARIO EMPRESARIAL - V3.0</title>
+    <title>SISTEMA DE INVENTARIO ALTA PRECISIÓN</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="status-bar">
         <span id="auth-status">⚠️ NO AUTENTICADO</span>
-        <span id="user-display" style="margin-left:20px; font-weight:normal; font-size:12px;"></span>
+        <span id="user-display" style="margin-left:20px; font-weight:normal; font-size:11px;"></span>
     </div>
 
     <nav class="main-nav">
@@ -45,7 +45,7 @@
                 </aside>
                 <main class="table-area">
                     <div class="header-table">
-                        <input type="text" id="buscador" placeholder="Escriba aquí (ej: esp)...">
+                        <input type="text" id="buscador" placeholder="Buscar producto...">
                         <button id="btnBuscar" class="btn-primary">🔍 BUSCAR</button>
                     </div>
                     <table class="data-table">
@@ -82,7 +82,7 @@
                     <input type="number" id="d-cantidad" value="1">
                     <input type="text" id="d-motivo" placeholder="Motivo">
                     <textarea id="d-obs" placeholder="Observaciones"></textarea>
-                    <button id="btnRegistrarDevolucion" class="btn-teal">🔄 Procesar Devolución</button>
+                    <button id="btnRegistrarDevolucion" class="btn-teal">🔄 Devolución</button>
                 </aside>
                 <main class="table-area">
                     <table class="data-table">
@@ -95,9 +95,9 @@
 
         <section id="historial-section" class="tab-content">
             <div class="table-area">
-                <h3>HISTORIAL DE MOVIMIENTOS Y ACCESOS</h3>
+                <h3>HISTORIAL DE MOVIMIENTOS Y DISPOSITIVOS</h3>
                 <table class="data-table">
-                    <thead><tr><th>TIPO</th><th>USUARIO</th><th>DETALLE</th><th>IP / MAPS</th><th>FECHA</th></tr></thead>
+                    <thead><tr><th>TIPO</th><th>USUARIO</th><th>DISPOSITIVO</th><th>IP / MAPS</th><th>FECHA</th></tr></thead>
                     <tbody id="tbody-historial"></tbody>
                 </table>
             </div>
