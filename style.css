@@ -1,22 +1,32 @@
-body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #e0e0e0; }
-.status-bar { background: #fff; padding: 10px 20px; border-bottom: 2px solid #ccc; font-weight: bold; display: flex; color: #e74c3c; align-items: center; }
-.main-nav { display: flex; background: #f2f2f2; border-bottom: 1px solid #999; }
-.nav-btn { padding: 12px 20px; border: 1px solid #999; border-bottom: none; cursor: pointer; font-weight: bold; }
-.container { padding: 20px; }
-.panel-layout { display: flex; gap: 15px; height: 75vh; }
-.sidebar { width: 300px; background: #cccccc; padding: 20px; border: 1px solid #999; display: flex; flex-direction: column; gap: 10px; }
-.table-area { flex: 1; background: #fff; border: 1px solid #999; padding: 15px; overflow-y: auto; }
-input, select, textarea { padding: 10px; border: 1px solid #999; border-radius: 3px; }
-.btn-save { background: #27ae60; color: #fff; border: none; padding: 12px; cursor: pointer; font-weight: bold; }
-.btn-danger { background: #c0392b; color: #fff; border: none; padding: 12px; cursor: pointer; font-weight: bold; }
-.btn-teal { background: #008080; color: #fff; border: none; padding: 12px; cursor: pointer; font-weight: bold; }
-.btn-warning { background: #e67e22; color: #fff; border: none; padding: 12px; cursor: pointer; font-weight: bold; }
-.btn-primary { background: #2980b9; color: #fff; border: none; padding: 12px; cursor: pointer; font-weight: bold; }
-.data-table { width: 100%; border-collapse: collapse; background: #fff; }
-.data-table th { background: #d9edf7; border: 1px solid #bce8f1; padding: 10px; text-align: left; font-size: 12px; }
-.data-table td { border: 1px solid #ddd; padding: 8px; font-size: 13px; }
+/* General */
+* { box-sizing: border-box; }
+body { font-family: sans-serif; margin: 0; background: #f0f0f0; }
+
+/* Barra superior y Nav */
+.status-bar { background: #fff; color: red; padding: 5px 15px; border-bottom: 1px solid #ccc; font-weight: bold; font-size: 14px; }
+.main-nav { display: flex; background: #f9f9f9; border-bottom: 1px solid #ccc; }
+.nav-btn { padding: 10px 15px; border: 1px solid #ccc; background: none; cursor: pointer; border-bottom: none; }
+.nav-btn:hover { background: #e0e0e0; }
+
+/* Layout */
+.panel-layout { display: flex; gap: 10px; padding: 10px; height: calc(100vh - 80px); }
+.sidebar { width: 300px; background: #cfcfcf; padding: 20px; border: 1px solid #999; display: flex; flex-direction: column; gap: 10px; }
+.table-area { flex: 1; background: #fff; border: 1px solid #999; padding: 10px; overflow-y: auto; }
+
+/* Formularios y Botones */
+input, select { padding: 8px; border: 1px solid #999; width: 100%; }
+.btn-primary, .btn-save { background: green; color: #fff; border: none; padding: 10px; font-weight: bold; cursor: pointer; }
+.btn-delete { background: red; color: #fff; border: none; padding: 10px; font-weight: bold; cursor: pointer; }
+.btn-warning { background: #f39c12; color: #fff; border: none; padding: 10px; font-weight: bold; cursor: pointer; }
+
+/* Tablas */
+.data-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+.data-table th { background: #e8e8e8; border: 1px solid #aaa; padding: 8px; font-size: 13px; text-align: left; }
+.data-table td { border: 1px solid #ccc; padding: 8px; font-size: 13px; }
+
+/* Pestañas */
 .tab-content { display: none; }
 .tab-content.active { display: block; }
-.header-table { display: flex; justify-content: flex-end; margin-bottom: 15px; }
-#buscador { width: 250px; border-radius: 20px 0 0 20px; border: 2px solid #2980b9; padding: 8px 15px; }
-.login-box { width: 350px; margin: 100px auto; background: #ccc; padding: 30px; border: 1px solid #999; display: flex; flex-direction: column; gap: 15px; }
+
+/* Login Box */
+.login-box { width: 400px; margin: 100px auto; background: #cfcfcf; padding: 40px; border: 1px solid #999; text-align: center; }
