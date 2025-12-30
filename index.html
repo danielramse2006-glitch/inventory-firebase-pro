@@ -2,69 +2,64 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Inventario Empresarial</title>
+    <title>SISTEMA DE INVENTARIO PROFESIONAL</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="status-bar">
-        <span id="auth-status">⚠️ No autenticado</span>
-    </div>
+    <div class="status-bar"><span id="auth-status">⚠️ ESTADO: NO AUTENTICADO</span></div>
 
     <nav class="main-nav">
-        <button onclick="showSection('login-section')" class="nav-btn">🔐 Iniciar Sesión</button>
-        <button onclick="showSection('gestion-section')" class="nav-btn">📦 Gestión de Productos</button>
-        <button onclick="showSection('salidas-section')" class="nav-btn">📤 Registro de Salidas</button>
-        <button onclick="showSection('devoluciones-section')" class="nav-btn">🔄 Devoluciones</button>
+        <button onclick="showSection('login-section')" class="nav-btn">🔐 INICIO</button>
+        <button onclick="showSection('gestion-section')" class="nav-btn">📦 GESTIÓN</button>
+        <button onclick="showSection('salidas-section')" class="nav-btn">📤 SALIDAS</button>
+        <button onclick="showSection('devoluciones-section')" class="nav-btn">🔄 DEVOLUCIONES</button>
     </nav>
 
     <div class="container">
         <section id="login-section" class="tab-content active">
             <div class="login-box">
-                <h2>INICIAR</h2>
-                <div class="form-group">
-                    <label>Usuario:</label>
-                    <input type="text" id="user-input" placeholder="A">
-                    <label>Contraseña:</label>
-                    <input type="password" id="pass-input" placeholder="Ingrese su contraseña">
-                    <button id="btnLogin" class="btn-primary">🔑 Iniciar Sesión</button>
-                </div>
+                <h2>INICIAR SESIÓN</h2>
+                <input type="text" id="user-input" placeholder="Usuario (Ej: A)">
+                <input type="password" id="pass-input" placeholder="Contraseña">
+                <button id="btnLogin" class="btn-save">ENTRAR</button>
             </div>
         </section>
 
         <section id="gestion-section" class="tab-content">
             <div class="panel-layout">
                 <aside class="sidebar">
-                    <h3>AGREGAR/EDITAR</h3>
-                    <input type="text" id="g-nombre" placeholder="Nombre:">
-                    <input type="text" id="g-codigo" placeholder="Código:">
+                    <h3>AGREGAR / ACTUALIZAR</h3>
+                    <label>Nombre del Producto:</label>
+                    <input type="text" id="g-nombre">
+                    <label>Código:</label>
+                    <input type="text" id="g-codigo">
+                    <label>Cantidad:</label>
+                    <input type="number" id="g-cantidad">
+                    <label>Categoría:</label>
                     <select id="g-categoria">
-                        <option value="Electrónica">Electrónica</option>
-                        <option value="Hogar">Hogar</option>
+                        <option>Electrónica</option>
+                        <option>Hogar</option>
+                        <option>Ropa</option>
                     </select>
-                    <input type="number" id="g-cantidad" placeholder="Cantidad:">
+                    <label>Estado:</label>
                     <select id="g-estado">
-                        <option value="Nuevo">Nuevo</option>
-                        <option value="Semi nuevo">Semi nuevo</option>
+                        <option>Nuevo</option>
+                        <option>Semi nuevo</option>
                     </select>
-                    <div class="btn-group">
-                        <button id="btnGuardar" class="btn-save">💾 Guardar Producto</button>
-                        <button id="btnEliminar" class="btn-delete">🗑️ Eliminar Producto</button>
-                    </div>
+                    <button id="btnGuardar" class="btn-save">💾 GUARDAR PRODUCTO</button>
                 </aside>
                 <main class="table-area">
-                    <div class="search-box">
-                        🔍 <input type="text" id="buscador" placeholder="Buscar por código o nombre...">
+                    <div class="header-table">
+                        <input type="text" id="buscador" placeholder="🔍 BUSCAR POR NOMBRE O CÓDIGO...">
                     </div>
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>Código</th>
-                                <th>Nombre</th>
-                                <th>Categoría</th>
-                                <th>Cantidad</th>
-                                <th>Estado</th>
-                                <th>Fecha Creación</th>
+                                <th>CÓDIGO</th>
+                                <th>NOMBRE</th>
+                                <th>STOCK</th>
+                                <th>ESTADO</th>
+                                <th>CATEGORÍA</th>
                             </tr>
                         </thead>
                         <tbody id="tbody-productos"></tbody>
@@ -76,25 +71,48 @@
         <section id="salidas-section" class="tab-content">
             <div class="panel-layout">
                 <aside class="sidebar">
-                    <h3>REGISTRAR SALIDA DE</h3>
-                    <input type="text" id="s-codigo" placeholder="Código Producto:">
-                    <input type="number" id="s-cantidad" value="1">
-                    <input type="text" id="s-responsable" placeholder="Responsable:">
-                    <button id="btnRegistrarSalida" class="btn-warning">🚀 Registrar Salida</button>
+                    <h3>REGISTRAR SALIDA</h3>
+                    <input type="text" id="s-codigo" placeholder="Código del Producto">
+                    <input type="number" id="s-cantidad" placeholder="Cantidad a retirar">
+                    <input type="text" id="s-responsable" placeholder="Nombre Responsable">
+                    <button id="btnRegistrarSalida" class="btn-warning">🚀 REGISTRAR SALIDA</button>
                 </aside>
                 <main class="table-area">
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>ID Salida</th>
-                                <th>Código</th>
-                                <th>Nombre</th>
-                                <th>Responsable</th>
-                                <th>Cantidad</th>
-                                <th>Fecha/Hora</th>
+                                <th>CÓDIGO</th>
+                                <th>RESPONSABLE</th>
+                                <th>CANT.</th>
+                                <th>FECHA</th>
                             </tr>
                         </thead>
                         <tbody id="tbody-salidas"></tbody>
+                    </table>
+                </main>
+            </div>
+        </section>
+
+        <section id="devoluciones-section" class="tab-content">
+            <div class="panel-layout">
+                <aside class="sidebar">
+                    <h3>REGISTRAR DEVOLUCIÓN</h3>
+                    <input type="text" id="d-codigo" placeholder="Código del Producto">
+                    <input type="number" id="d-cantidad" placeholder="Cantidad devuelta">
+                    <input type="text" id="d-motivo" placeholder="Motivo">
+                    <button id="btnRegistrarDevolucion" class="btn-primary">🔄 REGISTRAR DEVOLUCIÓN</button>
+                </aside>
+                <main class="table-area">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>CÓDIGO</th>
+                                <th>MOTIVO</th>
+                                <th>CANT.</th>
+                                <th>FECHA</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-devoluciones"></tbody>
                     </table>
                 </main>
             </div>

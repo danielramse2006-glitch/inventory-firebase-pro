@@ -1,7 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// Tu configuración de Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyCtIagFFJBFRjvg5usXTm575YqOeeDE1G0",
     authDomain: "mi-inventario-51f82.firebaseapp.com",
@@ -15,96 +14,104 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 let productosLocal = [];
 
-// --- NAVEGACIÓN ---
-window.showSection = (sectionId) => {
-    document.querySelectorAll('.tab-content').forEach(section => section.classList.remove('active'));
-    document.getElementById(sectionId).classList.add('active');
+// NAVEGACIÓN
+window.showSection = (id) => {
+    document.querySelectorAll('.tab-content').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
 };
 
-// --- LOGIN SIMULADO ---
+// LOGIN SIMULADO
 document.getElementById('btnLogin').onclick = () => {
-    const user = document.getElementById('user-input').value;
-    if(user === "admin" || user === "A") {
-        document.getElementById('auth-status').innerText = "✅ Autenticado: " + user;
+    if(document.getElementById('user-input').value.toUpperCase() === "A") {
+        document.getElementById('auth-status').innerText = "✅ ESTADO: AUTENTICADO COMO ADMIN";
         document.getElementById('auth-status').style.color = "green";
         showSection('gestion-section');
-    } else {
-        alert("Usuario no válido");
     }
 };
 
-// --- 1. GUARDAR / ACTUALIZAR PRODUCTO (SUMA SI EXISTE) ---
+// BUSCADOR FUNCIONAL
+document.getElementById('buscador').oninput = (e) => {
+    const term = e.target.value.toLowerCase();
+    const filtrados = productosLocal.filter(p => p.nombre.toLowerCase().includes(term) || p.codigo.toLowerCase().includes(term));
+    renderTable(filtrados);
+};
+
+// GUARDAR (SUMA SI EL CÓDIGO EXISTE)
 document.getElementById('btnGuardar').onclick = async () => {
-    const nombre = document.getElementById('g-nombre').value;
-    const codigo = document.getElementById('g-codigo').value;
-    const cantidadNueva = Number(document.getElementById('g-cantidad').value);
+    const cod = document.getElementById('g-codigo').value;
+    const cant = Number(document.getElementById('g-cantidad').value);
+    
+    const q = query(collection(db, "productos"), where("codigo", "==", cod));
+    const snap = await getDocs(q);
 
-    if(!nombre || !codigo || !cantidadNueva) return alert("Llena los campos");
-
-    // Buscar si el código ya existe
-    const q = query(collection(db, "productos"), where("codigo", "==", codigo));
-    const querySnapshot = await getDocs(q);
-
-    if (!querySnapshot.empty) {
-        // SI EXISTE: Sumar cantidad
-        const productoDoc = querySnapshot.docs[0];
-        const stockActual = productoDoc.data().cantidad;
-        await updateDoc(doc(db, "productos", productoDoc.id), {
-            cantidad: stockActual + cantidadNueva
-        });
-        alert("Código existente: Se sumó la cantidad al stock.");
+    if (!snap.empty) {
+        const docRef = doc(db, "productos", snap.docs[0].id);
+        await updateDoc(docRef, { cantidad: snap.docs[0].data().cantidad + cant });
+        alert("Stock actualizado");
     } else {
-        // NO EXISTE: Crear nuevo
         await addDoc(collection(db, "productos"), {
-            nombre, codigo, 
+            nombre: document.getElementById('g-nombre').value,
+            codigo: cod,
+            cantidad: cant,
             categoria: document.getElementById('g-categoria').value,
-            cantidad: cantidadNueva,
-            estado: document.getElementById('g-estado').value,
-            fecha: new Date().toLocaleString()
+            estado: document.getElementById('g-estado').value
         });
-        alert("Producto nuevo registrado");
+        alert("Nuevo producto creado");
     }
 };
 
-// --- 2. REGISTRAR SALIDA (RESTA DEL STOCK) ---
+// REGISTRAR SALIDA (RESTA STOCK)
 document.getElementById('btnRegistrarSalida').onclick = async () => {
-    const codigo = document.getElementById('s-codigo').value;
-    const cantSalida = Number(document.getElementById('s-cantidad').value);
-    const resp = document.getElementById('s-responsable').value;
+    const cod = document.getElementById('s-codigo').value;
+    const cant = Number(document.getElementById('s-cantidad').value);
+    
+    const q = query(collection(db, "productos"), where("codigo", "==", cod));
+    const snap = await getDocs(q);
 
-    const q = query(collection(db, "productos"), where("codigo", "==", codigo));
-    const querySnapshot = await getDocs(q);
-
-    if (querySnapshot.empty) return alert("El código no existe en el inventario");
-
-    const productoDoc = querySnapshot.docs[0];
-    const stockActual = productoDoc.data().cantidad;
-
-    if (stockActual >= cantSalida) {
-        // Restar del inventario
-        await updateDoc(doc(db, "productos", productoDoc.id), {
-            cantidad: stockActual - cantSalida
-        });
-        // Guardar registro de salida
-        await addDoc(collection(db, "salidas"), {
-            codigo, responsable: resp, cantidad: cantSalida, fecha: new Date().toLocaleString()
-        });
-        alert("Salida registrada y stock actualizado");
+    if (!snap.empty && snap.docs[0].data().cantidad >= cant) {
+        await updateDoc(doc(db, "productos", snap.docs[0].id), { cantidad: snap.docs[0].data().cantidad - cant });
+        await addDoc(collection(db, "salidas"), { codigo: cod, cantidad: cant, responsable: document.getElementById('s-responsable').value, fecha: new Date().toLocaleString() });
+        alert("Salida registrada");
     } else {
-        alert("Stock insuficiente. Solo hay: " + stockActual);
+        alert("Error: Stock insuficiente o código no existe");
     }
 };
 
-// --- 3. MOSTRAR DATOS EN TIEMPO REAL ---
-onSnapshot(collection(db, "productos"), (snapshot) => {
-    productosLocal = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+// REGISTRAR DEVOLUCIÓN (SUMA STOCK)
+document.getElementById('btnRegistrarDevolucion').onclick = async () => {
+    const cod = document.getElementById('d-codigo').value;
+    const cant = Number(document.getElementById('d-cantidad').value);
+    
+    const q = query(collection(db, "productos"), where("codigo", "==", cod));
+    const snap = await getDocs(q);
+
+    if (!snap.empty) {
+        await updateDoc(doc(db, "productos", snap.docs[0].id), { cantidad: snap.docs[0].data().cantidad + cant });
+        await addDoc(collection(db, "devoluciones"), { codigo: cod, cantidad: cant, motivo: document.getElementById('d-motivo').value, fecha: new Date().toLocaleString() });
+        alert("Devolución registrada");
+    } else {
+        alert("Error: El código no existe");
+    }
+};
+
+// ESCUCHAS EN TIEMPO REAL
+onSnapshot(collection(db, "productos"), (s) => {
+    productosLocal = s.docs.map(d => d.data());
     renderTable(productosLocal);
 });
 
 function renderTable(data) {
-    const tbody = document.getElementById('tbody-productos');
-    tbody.innerHTML = "";
-    data.forEach(p => {
-        tbody.innerHTML += `<tr><td>${p.codigo}</td><td>${p.nombre}</td><td>${p.categoria}</td><td>${p.cantidad}</td><td>${p.estado}</td><td>${p.fecha}</td></tr>`;
-    });
+    const tb = document.getElementById('tbody-productos');
+    tb.innerHTML = "";
+    data.forEach(p => { tb.innerHTML += `<tr><td>${p.codigo}</td><td>${p.nombre}</td><td>${p.cantidad}</td><td>${p.estado}</td><td>${p.categoria}</td></tr>`; });
 }
+
+onSnapshot(collection(db, "salidas"), (s) => {
+    const tb = document.getElementById('tbody-salidas'); tb.innerHTML = "";
+    s.docs.forEach(d => { const p = d.data(); tb.innerHTML += `<tr><td>${p.codigo}</td><td>${p.responsable}</td><td>${p.cantidad}</td><td>${p.fecha}</td></tr>`; });
+});
+
+onSnapshot(collection(db, "devoluciones"), (s) => {
+    const tb = document.getElementById('tbody-devoluciones'); tb.innerHTML = "";
+    s.docs.forEach(d => { const p = d.data(); tb.innerHTML += `<tr><td>${p.codigo}</td><td>${p.motivo}</td><td>${p.cantidad}</td><td>${p.fecha}</td></tr>`; });
+});
