@@ -2,20 +2,17 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>SISTEMA DE INVENTARIO - REYNOSA 2025</title>
+    <title>SISTEMA DE INVENTARIO - ALTA PRECISIÓN</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="status-bar">
         <span id="auth-status">⚠️ NO AUTENTICADO</span>
-        <span id="user-display" style="margin-left:20px; font-weight:normal; font-size:11px;"></span>
     </div>
 
     <nav class="main-nav">
         <button onclick="showSection('login-section')" class="nav-btn">🔐 LOGIN</button>
         <button onclick="showSection('gestion-section')" class="nav-btn">📦 GESTIÓN</button>
-        <button onclick="showSection('salidas-section')" class="nav-btn">📤 SALIDAS</button>
-        <button onclick="showSection('devoluciones-section')" class="nav-btn">🔄 DEVOLUCIONES</button>
         <button id="nav-historial" onclick="showSection('historial-section')" class="nav-btn" style="display:none; background:#ffeaa7;">📊 HISTORIAL</button>
     </nav>
 
@@ -33,7 +30,7 @@
             <div class="panel-layout">
                 <aside class="sidebar">
                     <h3>CONTROL DE PRODUCTO</h3>
-                    <input type="text" id="g-nombre" placeholder="Nombre (para nuevos)">
+                    <input type="text" id="g-nombre" placeholder="Nombre">
                     <input type="text" id="g-codigo" placeholder="Código">
                     <input type="number" id="g-cantidad" placeholder="Cantidad">
                     <select id="g-categoria"><option>Electrónica</option><option>Hogar</option></select>
@@ -44,10 +41,6 @@
                     </div>
                 </aside>
                 <main class="table-area">
-                    <div class="header-table">
-                        <input type="text" id="buscador" placeholder="Buscar producto...">
-                        <button id="btnBuscar" class="btn-primary">🔍 BUSCAR</button>
-                    </div>
                     <table class="data-table">
                         <thead><tr><th>COD</th><th>NOMBRE</th><th>STOCK</th><th>ESTADO</th></tr></thead>
                         <tbody id="tbody-productos"></tbody>
@@ -56,46 +49,9 @@
             </div>
         </section>
 
-        <section id="salidas-section" class="tab-content">
-            <div class="panel-layout">
-                <aside class="sidebar">
-                    <h3>REGISTRAR SALIDA</h3>
-                    <input type="text" id="s-codigo" placeholder="Código">
-                    <input type="number" id="s-cantidad" value="1">
-                    <input type="text" id="s-responsable" placeholder="Responsable">
-                    <button id="btnRegistrarSalida" class="btn-warning">🚀 Salida</button>
-                </aside>
-                <main class="table-area">
-                    <table class="data-table">
-                        <thead><tr><th>COD</th><th>RESPONSABLE</th><th>CANT</th><th>FECHA</th></tr></thead>
-                        <tbody id="tbody-salidas"></tbody>
-                    </table>
-                </main>
-            </div>
-        </section>
-
-        <section id="devoluciones-section" class="tab-content">
-            <div class="panel-layout">
-                <aside class="sidebar">
-                    <h3>REGISTRAR DEVOLUCIÓN</h3>
-                    <input type="text" id="d-codigo" placeholder="Código">
-                    <input type="number" id="d-cantidad" value="1">
-                    <input type="text" id="d-motivo" placeholder="Motivo">
-                    <textarea id="d-obs" placeholder="Observaciones"></textarea>
-                    <button id="btnRegistrarDevolucion" class="btn-teal">🔄 Devolución</button>
-                </aside>
-                <main class="table-area">
-                    <table class="data-table">
-                        <thead><tr><th>COD</th><th>NOMBRE</th><th>CANT</th><th>MOTIVO</th><th>USUARIO</th><th>FECHA</th></tr></thead>
-                        <tbody id="tbody-devoluciones"></tbody>
-                    </table>
-                </main>
-            </div>
-        </section>
-
         <section id="historial-section" class="tab-content">
             <div class="table-area">
-                <h3>HISTORIAL DE DISPOSITIVOS Y MOVIMIENTOS</h3>
+                <h3>HISTORIAL DE MOVIMIENTOS</h3>
                 <table class="data-table">
                     <thead><tr><th>TIPO</th><th>USUARIO</th><th>DISPOSITIVO</th><th>IP / MAPS</th><th>FECHA</th></tr></thead>
                     <tbody id="tbody-historial"></tbody>
