@@ -3,11 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SISTEMA DE INVENTARIO PRO</title>
+    <title>SISTEMA DE INVENTARIO PRO + SEGURIDAD</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="status-bar"><span id="auth-status">⚠️ ESTADO: NO AUTENTICADO</span></div>
+    <div class="status-bar">
+        <span id="auth-status">⚠️ ESTADO: NO AUTENTICADO</span>
+        <span id="user-info" style="margin-left: 20px; font-size: 11px; color: #555;"></span>
+    </div>
 
     <nav class="main-nav">
         <button onclick="showSection('login-section')" class="nav-btn">🔐 LOGIN</button>
@@ -23,6 +26,7 @@
                 <input type="text" id="user-input" placeholder="Usuario (A)">
                 <input type="password" id="pass-input" placeholder="Contraseña">
                 <button id="btnLogin" class="btn-save">ENTRAR</button>
+                <p id="log-msg" style="font-size: 10px; color: #666; margin-top: 10px;"></p>
             </div>
         </section>
 
@@ -45,7 +49,8 @@
                 </aside>
                 <main class="table-area">
                     <div class="header-table">
-                        <input type="text" id="buscador" placeholder="🔍 Buscar por nombre o código...">
+                        <input type="text" id="buscador" placeholder="Escriba aquí (ej: esp)...">
+                        <button id="btnBuscar" class="btn-primary" style="margin-left: 5px; border-radius: 20px;">🔍 BUSCAR</button>
                     </div>
                     <table class="data-table">
                         <thead>
@@ -95,7 +100,7 @@
                     <input type="text" id="d-codigo" placeholder="Código">
                     <input type="number" id="d-cantidad" placeholder="Cantidad devuelta">
                     <input type="text" id="d-motivo" placeholder="Motivo">
-                    <button id="btnRegistrarDevolucion" class="btn-primary">🔄 DEVOLUCIÓN</button>
+                    <button id="btnRegistrarDevolucion" class="btn-primary" style="background:#2980b9">🔄 DEVOLUCIÓN</button>
                 </aside>
                 <main class="table-area">
                     <table class="data-table">
