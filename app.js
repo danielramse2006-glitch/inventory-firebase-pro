@@ -15,12 +15,18 @@ const db = getFirestore(app);
 let productosLocal = [];
 let currentUser = "";
 
+// --- VALIDACIÓN DE NAVEGACIÓN ---
 window.showSection = (id) => {
+    // Si no hay sesión iniciada y no es el login, bloqueamos
+    if (!currentUser && id !== 'login-section') {
+        alert("⛔ Acceso denegado: Inicie sesión primero.");
+        return;
+    }
     document.querySelectorAll('.tab-content').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
 };
 
-// --- AUDITORÍA CON GPS DE MÁXIMA PRECISIÓN ---
+// --- AUDITORÍA CON GPS ---
 async function getAuditData() {
     let data = { 
         ip: "0.0.0.0", 
@@ -52,24 +58,30 @@ async function registrarLog(tipo, detalle) {
     });
 }
 
-// --- LOGIN ---
+// --- LOGIN CON ACTIVACIÓN DE MENÚ ---
 document.getElementById('btnLogin').onclick = async () => {
     const u = document.getElementById('user-input').value;
     const p = document.getElementById('pass-input').value;
+    
     if (u === "admiut" && p === "#Reyn0sa#") {
         currentUser = u;
         document.getElementById('nav-historial').style.display = "block";
     } else if (u === "usuariout" && p === "12131415") {
         currentUser = u;
         document.getElementById('nav-historial').style.display = "none";
-    } else { return alert("Acceso Incorrecto"); }
+    } else { 
+        return alert("Acceso Incorrecto"); 
+    }
+
+    // Activamos la barra de navegación tras el login exitoso
+    document.getElementById('main-nav-bar').style.display = "flex";
 
     await registrarLog("LOGIN", "Entró al sistema");
     document.getElementById('auth-status').innerText = `✅ ${currentUser.toUpperCase()}`;
     showSection('gestion-section');
 };
 
-// --- BORRADO RÁPIDO (RESTA O ELIMINA) ---
+// --- BORRADO RÁPIDO ---
 document.getElementById('btnEliminarRapido').onclick = async () => {
     const cod = document.getElementById('g-codigo').value;
     const cant = Number(document.getElementById('g-cantidad').value);
@@ -145,7 +157,7 @@ document.getElementById('btnRegistrarDevolucion').onclick = async () => {
     } else { alert("Código no reconocido"); }
 };
 
-// --- SINCRONIZACIÓN DE TABLAS ---
+// --- SINCRONIZACIÓN EN TIEMPO REAL ---
 onSnapshot(collection(db, "productos"), s => {
     productosLocal = s.docs.map(d => ({id: d.id, ...d.data()}));
     const tb = document.getElementById('tbody-productos'); tb.innerHTML = "";
