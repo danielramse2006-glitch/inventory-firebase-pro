@@ -15,18 +15,18 @@ const db = getFirestore(app);
 let productosLocal = [];
 let currentUser = "";
 
-// --- VALIDACIÓN DE NAVEGACIÓN ---
+// --- SISTEMA DE NAVEGACIÓN PROTEGIDO ---
 window.showSection = (id) => {
-    // Si no hay sesión iniciada y no es el login, bloqueamos
+    // Bloqueo total si no hay sesión activa
     if (!currentUser && id !== 'login-section') {
-        alert("⛔ Acceso denegado: Inicie sesión primero.");
+        alert("⛔ Acceso restringido. Por favor, inicie sesión.");
         return;
     }
     document.querySelectorAll('.tab-content').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
 };
 
-// --- AUDITORÍA CON GPS ---
+// --- AUDITORÍA Y GPS ---
 async function getAuditData() {
     let data = { 
         ip: "0.0.0.0", 
@@ -58,7 +58,7 @@ async function registrarLog(tipo, detalle) {
     });
 }
 
-// --- LOGIN CON ACTIVACIÓN DE MENÚ ---
+// --- LOGIN CON REDIRECCIÓN A REGISTRO ---
 document.getElementById('btnLogin').onclick = async () => {
     const u = document.getElementById('user-input').value;
     const p = document.getElementById('pass-input').value;
@@ -73,15 +73,17 @@ document.getElementById('btnLogin').onclick = async () => {
         return alert("Acceso Incorrecto"); 
     }
 
-    // Activamos la barra de navegación tras el login exitoso
+    // Desbloqueamos la navegación y redirigimos
     document.getElementById('main-nav-bar').style.display = "flex";
-
+    
     await registrarLog("LOGIN", "Entró al sistema");
     document.getElementById('auth-status').innerText = `✅ ${currentUser.toUpperCase()}`;
+    
+    // REDIRECCIÓN A GESTIÓN (Nuevo Registro)
     showSection('gestion-section');
 };
 
-// --- BORRADO RÁPIDO ---
+// --- GESTIÓN DE PRODUCTOS ---
 document.getElementById('btnEliminarRapido').onclick = async () => {
     const cod = document.getElementById('g-codigo').value;
     const cant = Number(document.getElementById('g-cantidad').value);
@@ -105,7 +107,6 @@ document.getElementById('btnEliminarRapido').onclick = async () => {
     }
 };
 
-// --- GUARDAR / SUMAR ---
 document.getElementById('btnGuardar').onclick = async () => {
     const cod = document.getElementById('g-codigo').value;
     const nom = document.getElementById('g-nombre').value;
@@ -127,7 +128,7 @@ document.getElementById('btnGuardar').onclick = async () => {
     alert("Guardado");
 };
 
-// --- SALIDAS ---
+// --- SALIDAS Y DEVOLUCIONES ---
 document.getElementById('btnRegistrarSalida').onclick = async () => {
     const cod = document.getElementById('s-codigo').value;
     const cant = Number(document.getElementById('s-cantidad').value);
@@ -142,7 +143,6 @@ document.getElementById('btnRegistrarSalida').onclick = async () => {
     } else { alert("Stock insuficiente o producto no existe"); }
 };
 
-// --- DEVOLUCIONES ---
 document.getElementById('btnRegistrarDevolucion').onclick = async () => {
     const cod = document.getElementById('d-codigo').value;
     const cant = Number(document.getElementById('d-cantidad').value);
@@ -157,7 +157,7 @@ document.getElementById('btnRegistrarDevolucion').onclick = async () => {
     } else { alert("Código no reconocido"); }
 };
 
-// --- SINCRONIZACIÓN EN TIEMPO REAL ---
+// --- TIEMPO REAL ---
 onSnapshot(collection(db, "productos"), s => {
     productosLocal = s.docs.map(d => ({id: d.id, ...d.data()}));
     const tb = document.getElementById('tbody-productos'); tb.innerHTML = "";
