@@ -15,11 +15,11 @@ const db = getFirestore(app);
 let productosLocal = [];
 let currentUser = "";
 
-// --- SISTEMA DE NAVEGACIÓN PROTEGIDO ---
+// --- PROTECCIÓN DE SECCIONES ---
 window.showSection = (id) => {
-    // Bloqueo total si no hay sesión activa
+    // Si no ha iniciado sesión, siempre lo devuelve al login
     if (!currentUser && id !== 'login-section') {
-        alert("⛔ Acceso restringido. Por favor, inicie sesión.");
+        alert("⛔ Acceso denegado: Por favor inicie sesión primero.");
         return;
     }
     document.querySelectorAll('.tab-content').forEach(s => s.classList.remove('active'));
@@ -28,24 +28,16 @@ window.showSection = (id) => {
 
 // --- AUDITORÍA Y GPS ---
 async function getAuditData() {
-    let data = { 
-        ip: "0.0.0.0", 
-        loc: "Sin permiso", 
-        device: navigator.userAgent.includes("Windows") ? "PC/Laptop" : "Dispositivo Móvil"
-    };
+    let data = { ip: "0.0.0.0", loc: "Sin permiso", device: navigator.userAgent.includes("Windows") ? "PC/Laptop" : "Dispositivo Móvil" };
     try {
         const res = await fetch('https://api.ipify.org?format=json');
         const json = await res.json();
         data.ip = json.ip;
-        
         return new Promise(resolve => {
             navigator.geolocation.getCurrentPosition(
-                p => { 
-                    data.loc = `${p.coords.latitude},${p.coords.longitude}`; 
-                    resolve(data); 
-                },
+                p => { data.loc = `${p.coords.latitude},${p.coords.longitude}`; resolve(data); },
                 () => resolve(data),
-                { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+                { enableHighAccuracy: true, timeout: 5000 }
             );
         });
     } catch { return data; }
@@ -58,7 +50,7 @@ async function registrarLog(tipo, detalle) {
     });
 }
 
-// --- LOGIN CON REDIRECCIÓN A REGISTRO ---
+// --- LOGIN CON REDIRECCIÓN AUTOMÁTICA ---
 document.getElementById('btnLogin').onclick = async () => {
     const u = document.getElementById('user-input').value;
     const p = document.getElementById('pass-input').value;
@@ -73,33 +65,33 @@ document.getElementById('btnLogin').onclick = async () => {
         return alert("Acceso Incorrecto"); 
     }
 
-    // Desbloqueamos la navegación y redirigimos
+    // 1. Mostrar la barra de navegación
     document.getElementById('main-nav-bar').style.display = "flex";
     
-    await registrarLog("LOGIN", "Entró al sistema");
+    // 2. Actualizar estado visual
     document.getElementById('auth-status').innerText = `✅ ${currentUser.toUpperCase()}`;
     
-    // REDIRECCIÓN A GESTIÓN (Nuevo Registro)
+    // 3. Registrar en historial
+    await registrarLog("LOGIN", "Entró al sistema");
+
+    // 4. REDIRECCIÓN: Enviar al usuario a la pestaña de Gestión (Registro)
     showSection('gestion-section');
 };
 
-// --- GESTIÓN DE PRODUCTOS ---
+// --- RESTO DE FUNCIONALIDADES (SIN CAMBIOS) ---
 document.getElementById('btnEliminarRapido').onclick = async () => {
     const cod = document.getElementById('g-codigo').value;
     const cant = Number(document.getElementById('g-cantidad').value);
     if(!cod || cant <= 0) return alert("Escriba código y cantidad");
-
     const q = query(collection(db, "productos"), where("codigo", "==", cod));
     const snap = await getDocs(q);
     if(snap.empty) return alert("Producto no encontrado");
-
     const pDoc = snap.docs[0];
     const nuevaCant = pDoc.data().cantidad - cant;
-
     if(nuevaCant <= 0) {
-        if(confirm(`Stock insuficiente. ¿Deseas ELIMINAR ${pDoc.data().nombre} del sistema?`)) {
+        if(confirm(`Stock insuficiente. ¿Deseas ELIMINAR ${pDoc.data().nombre}?`)) {
             await deleteDoc(doc(db, "productos", pDoc.id));
-            await registrarLog("ELIMINAR", `Borrado total de: ${pDoc.data().nombre}`);
+            await registrarLog("ELIMINAR", `Borrado: ${pDoc.data().nombre}`);
         }
     } else {
         await updateDoc(doc(db, "productos", pDoc.id), { cantidad: nuevaCant });
@@ -113,7 +105,6 @@ document.getElementById('btnGuardar').onclick = async () => {
     const cant = Number(document.getElementById('g-cantidad').value);
     const q = query(collection(db, "productos"), where("codigo", "==", cod));
     const snap = await getDocs(q);
-
     if(!snap.empty) {
         await updateDoc(doc(db, "productos", snap.docs[0].id), { cantidad: snap.docs[0].data().cantidad + cant });
         await registrarLog("STOCK", `Sumó ${cant} a ${nom}`);
@@ -123,24 +114,22 @@ document.getElementById('btnGuardar').onclick = async () => {
             categoria: document.getElementById('g-categoria').value, 
             estado: document.getElementById('g-estado').value 
         });
-        await registrarLog("CREAR", `Nuevo producto: ${nom}`);
+        await registrarLog("CREAR", `Nuevo: ${nom}`);
     }
     alert("Guardado");
 };
 
-// --- SALIDAS Y DEVOLUCIONES ---
 document.getElementById('btnRegistrarSalida').onclick = async () => {
     const cod = document.getElementById('s-codigo').value;
     const cant = Number(document.getElementById('s-cantidad').value);
     const q = query(collection(db, "productos"), where("codigo", "==", cod));
     const snap = await getDocs(q);
-
     if(!snap.empty && snap.docs[0].data().cantidad >= cant) {
         await updateDoc(doc(db, "productos", snap.docs[0].id), { cantidad: snap.docs[0].data().cantidad - cant });
         await addDoc(collection(db, "salidas"), { codigo: cod, responsable: document.getElementById('s-responsable').value, cantidad: cant, fecha: new Date().toLocaleString() });
-        await registrarLog("SALIDA", `Salida de ${cant} unid. de ${cod}`);
+        await registrarLog("SALIDA", `Salida de ${cant} de ${cod}`);
         alert("Salida registrada");
-    } else { alert("Stock insuficiente o producto no existe"); }
+    } else { alert("Stock insuficiente"); }
 };
 
 document.getElementById('btnRegistrarDevolucion').onclick = async () => {
@@ -148,16 +137,15 @@ document.getElementById('btnRegistrarDevolucion').onclick = async () => {
     const cant = Number(document.getElementById('d-cantidad').value);
     const q = query(collection(db, "productos"), where("codigo", "==", cod));
     const snap = await getDocs(q);
-
     if(!snap.empty) {
         await updateDoc(doc(db, "productos", snap.docs[0].id), { cantidad: snap.docs[0].data().cantidad + cant });
         await addDoc(collection(db, "devoluciones"), { codigo: cod, nombre: snap.docs[0].data().nombre, cantidad: cant, motivo: document.getElementById('d-motivo').value, usuario: currentUser, fecha: new Date().toLocaleString() });
-        await registrarLog("DEVOLUCION", `Regresaron ${cant} de ${cod}`);
+        await registrarLog("DEVOLUCION", `Regresó ${cant} de ${cod}`);
         alert("Devolución exitosa");
-    } else { alert("Código no reconocido"); }
+    } else { alert("Código no existe"); }
 };
 
-// --- TIEMPO REAL ---
+// --- SYNC TIEMPO REAL ---
 onSnapshot(collection(db, "productos"), s => {
     productosLocal = s.docs.map(d => ({id: d.id, ...d.data()}));
     const tb = document.getElementById('tbody-productos'); tb.innerHTML = "";
@@ -178,7 +166,7 @@ onSnapshot(collection(db, "historial"), s => {
     const tb = document.getElementById('tbody-historial'); tb.innerHTML = "";
     s.docs.forEach(d => {
         const v = d.data();
-        const mapLink = v.loc !== "Sin permiso" ? `<a href="https://www.google.com/maps?q=${v.loc}" target="_blank">📍 Ver GPS</a>` : "N/A";
+        const mapLink = v.loc !== "Sin permiso" ? `<a href="https://www.google.com/maps?q=${v.loc}" target="_blank">📍 GPS</a>` : "N/A";
         tb.innerHTML += `<tr><td>${v.tipo}</td><td>${v.usuario}</td><td>${v.device}</td><td>${v.ip}<br>${mapLink}</td><td>${v.fecha}</td></tr>`;
     });
 });
